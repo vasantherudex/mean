@@ -1,0 +1,161 @@
+<html >
+  <head>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- Angular JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <style>
+      table, th , td  {
+        border: 1px solid grey;
+        border-collapse: collapse;
+        padding: 5px;
+       }
+      table tr:nth-child(odd) {
+        background-color: #f1f1f1;
+       }
+      table tr:nth-child(even) {
+        background-color: #ffffff;
+       }
+     </style>
+   </head>
+<body ng-app="myApp" ng-controller="bookController">
+  <div class="container">
+  <form method="POST" action="insertdata.html">
+  <div >
+    <h3 class="text-center">Angular Js Crud </h3>
+     <table class="table table-bordered">
+       <tr>
+         <td>Book Name:</td>
+         <td>
+           <input type="hidden" class="form-control" ng-model="book.id" />
+           <input type="text" class="form-control" ng-model="book.name" />
+         </td>
+         <td>Book Author:</td>
+         <td><input type="text" class="form-control" ng-model="book.author" /></td>
+       </tr>
+       <tr>
+         <td>Book Price:</td>
+         <td><input type="text" ng-model="book.price" class="form-control" /></td>
+         <td>Book Language:</td>
+         <td><input type="text" ng-model="book.language" class="form-control" /></td>
+       </tr>
+       <tr>
+         <td></td>
+         <td> 
+            <input type="button" class="btn btn-success" value="Submit" ng-click="insertData(book)" />
+            <input type="button" class="btn btn-default" value="Clear" ng-click="clearForm()" />
+         </td>
+       </tr>
+     </table>
+      
+      
+      
+      -
+      
+    </form>  
+   </div>
+   <div>
+     <table>
+       <tr>
+          <th>Id</th>
+          <th>Book-Name</th>
+          <th>Book-Author</th>
+          <th>Book-Price</th>
+          <th>Book-lang</th>
+          <th>Action</th>
+      </tr>
+      <tr data-ng-repeat="x in books">
+          <td>{{ x.id }}</td>
+          <td>{{ x.name }}</td>
+	        <td>{{ x.author }}</td>
+	        <td>{{ x.price }}</td>
+		      <td>{{ x.language }}</td>
+		      <td>
+		        <a href="#" ng-click="editBook(x)">EDIT</a> |
+		        <a href="#" ng-click="deleteBook(x)">DELETE</a>
+		      </td>   
+      </tr>
+     </table>
+    </div>
+
+  </div>
+
+</body>
+<script>
+var app = angular.module('myApp',[]);
+    app.controller('bookController',function($scope,$http){	
+    
+
+    //display data from Books 
+    $scope.displayBooks=function(){
+      $http.get("get_subjects.php").then(function (response) {
+     // console.log(response.data);
+      $scope.books=response.data.names;
+      console.log('Diplay data from Database');
+      });
+    }
+    
+     //displaying data on load
+    $scope.displayBooks();
+
+    //inserting data
+    $scope.insertData=function(book){	
+      
+      if(angular.isDefined(book.id) == true){
+       // console.log('modify item index'+book.index);
+        //console.log(book.index);
+        $scope.books[book.index] = book;
+        $scope.clearForm();
+        $http.post("insert.php", {'id':book.id,'name':book.name,'author':book.author,'price':book.price,'language':book.language,'action':'update'}).success(function(data,status,headers,config){
+            console.log(data);
+        // angular.copy({}, book);
+
+        });
+
+      }else{
+        $http.post("insert.php", {'id':book.id,'name':book.name,'author':book.author,'price':book.price,'language':book.language,'action':'save'}).success(function(data,status,headers,config){
+             console.log(data);
+             $scope.clearForm();
+             $scope.displayBooks();
+             
+       });
+          
+      }
+     // angular.copy({}, book);
+      
+ 
+      
+     }
+
+    //editing page
+    $scope.editBook=function(edit){
+      //console.log('from Edit Page:'+edit.name);
+      $scope.book={id:edit.id,name:edit.name,author:edit.author,price:edit.price,language:edit.language,index:$scope.books.indexOf(edit)};
+      //$scope.book=edit;
+      //console.log('modify item index'+$scope.books.indexOf(edit));
+      //angular.copy(edit, book);
+    }
+    $scope.deleteBook=function(book){
+      $scope.books.splice($scope.books.indexOf(book),1);
+
+      $http.post("insert.php", {'id':book.id,'action':'delete'}).success(function(data,status,headers,config){
+         console.log(data);
+       });
+    }
+
+    $scope.clearForm=function(){
+      $scope.book={};
+    }
+ });
+
+</script>
+<!-- <script>
+var app = angular.module('myApp', []);
+app.controller('customersCtrl', function($scope, $http) {
+   $http.get("get_subjects.php")
+   .then(function (response) {$scope.names = response.data.names;});
+});
+</script>  -->
+</html>
+
